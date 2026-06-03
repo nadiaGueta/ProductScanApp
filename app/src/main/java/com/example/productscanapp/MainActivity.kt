@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.productscanapp.ui.scan.BarcodeScannerScreen
 import com.example.productscanapp.ui.product.ProductUiState
 import com.example.productscanapp.ui.product.ProductRoute
 import com.example.productscanapp.ui.product.ProductViewModel
@@ -36,6 +37,10 @@ class MainActivity : ComponentActivity() {
             val uiState by viewModel.uiState.collectAsState()
 
             ProductScanAppTheme {
+                BarcodeScannerScreen(
+                    onBarcodeDetected = { barcode ->
+                        println("CODE DETECTE = $barcode")
+                    }
                 MainAppScaffold(
                     uiState = uiState,
                     onSearch = viewModel::loadProduct,
