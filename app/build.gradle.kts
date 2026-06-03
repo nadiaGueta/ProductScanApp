@@ -77,4 +77,5 @@ dependencies {
 
     implementation(libs.mlkit.barcode)
 
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 }
