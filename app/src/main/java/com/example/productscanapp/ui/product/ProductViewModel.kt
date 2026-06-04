@@ -2,9 +2,11 @@ package com.example.productscanapp.ui.product
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.productscanapp.domain.Product
 import com.example.productscanapp.domain.ProductError
 import com.example.productscanapp.domain.ProductException
 import com.example.productscanapp.domain.ProductRepository
+import com.example.productscanapp.domain.ScanHistoryRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
@@ -17,6 +19,7 @@ import kotlinx.coroutines.withContext
 @HiltViewModel
 class ProductViewModel @Inject constructor(
     private val repository: ProductRepository,
+    private val scanHistoryRepository: ScanHistoryRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ProductUiState>(ProductUiState.Idle)
@@ -36,6 +39,9 @@ class ProductViewModel @Inject constructor(
 
             result
                 .onSuccess { product ->
+                    withContext(Dispatchers.IO) {
+                        scanHistoryRepository.saveScan(product)
+                    }
                     _uiState.value = ProductUiState.Success(product)
                 }
                 .onFailure { throwable ->
@@ -44,5 +50,8 @@ class ProductViewModel @Inject constructor(
                 }
         }
     }
-}
 
+    fun showProduct(product: Product) {
+        _uiState.value = ProductUiState.Success(product)
+    }
+}

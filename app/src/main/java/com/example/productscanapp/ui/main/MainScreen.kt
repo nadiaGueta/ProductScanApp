@@ -26,6 +26,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.productscanapp.domain.Product
 import com.example.productscanapp.domain.ProductError
+import com.example.productscanapp.ui.history.HistoryRoute
+import com.example.productscanapp.ui.history.HistoryViewModel
 import com.example.productscanapp.ui.product.ProductRoute
 import com.example.productscanapp.ui.product.ProductUiState
 import com.example.productscanapp.ui.product.ProductViewModel
@@ -34,9 +36,11 @@ import androidx.compose.ui.graphics.Color
 
 @Composable
 fun MainScreen(
-    searchViewModel: ProductViewModel = hiltViewModel(key = "search"),
-    scannerViewModel: ProductViewModel = hiltViewModel(key = "scanner")
+    productViewModel: ProductViewModel,
+    historyViewModel: HistoryViewModel,
+    scannerViewModel: ProductViewModel = hiltViewModel(key = "scanner"),
 ) {
+    val searchViewModel = productViewModel
     val searchUiState by searchViewModel.uiState.collectAsState()
     val scannerUiState by scannerViewModel.uiState.collectAsState()
     var selectedTab by remember {
@@ -82,7 +86,14 @@ fun MainScreen(
 
 
             AppTab.Historique -> {
-                PlaceholderTab("Historique", Modifier.padding(innerPadding))
+                HistoryRoute(
+                    modifier = Modifier.padding(innerPadding),
+                    viewModel = historyViewModel,
+                    onProductClick = { product ->
+                        searchViewModel.showProduct(product)
+                        selectedTab = AppTab.Recherche
+                    },
+                )
             }
 
             AppTab.Favoris -> {
