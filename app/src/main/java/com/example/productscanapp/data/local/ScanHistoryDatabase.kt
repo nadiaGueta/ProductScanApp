@@ -7,7 +7,7 @@ import com.example.productscanapp.data.local.entity.ScanHistoryEntity
 
 @Database(
     entities = [ScanHistoryEntity::class],
-    version = 1,
+    version = 3,
     exportSchema = false,
 )
 abstract class ScanHistoryDatabase : RoomDatabase() {

@@ -26,7 +26,9 @@ object DatabaseModule {
             context,
             ScanHistoryDatabase::class.java,
             DATABASE_NAME,
-        ).build()
+        )
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     @Provides

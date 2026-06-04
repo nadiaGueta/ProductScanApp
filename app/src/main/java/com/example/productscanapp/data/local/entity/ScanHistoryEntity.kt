@@ -16,5 +16,7 @@ data class ScanHistoryEntity(
     val nutriScore: String?,
     val imageUrl: String?,
     val scannedAt: Long,
+    val favoriteAt: Long? = null ,
+    val isFavorite: Boolean = false
 )
 

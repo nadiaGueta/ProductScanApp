@@ -1,5 +1,7 @@
 package com.example.productscanapp.data
 
+import com.example.productscanapp.data.local.dao.ScanHistoryDao
+import com.example.productscanapp.data.local.toEntity
 import com.example.productscanapp.data.remote.OpenFoodFactsApi
 import com.example.productscanapp.data.remote.toDomain
 import com.example.productscanapp.data.remote.toProductException
@@ -11,6 +13,7 @@ import javax.inject.Inject
 
 class DefaultProductRepository @Inject constructor(
     private val api: OpenFoodFactsApi,
+    private val scanHistoryDao: ScanHistoryDao
 ) : ProductRepository {
 
     override suspend fun getProductByBarcode(barcode: String): Result<Product> {
@@ -26,6 +29,29 @@ class DefaultProductRepository @Inject constructor(
         } catch (throwable: Throwable) {
             Result.failure(throwable.toProductException())
         }
+    }
+
+    override suspend fun addToFavorites(product: Product) {
+        scanHistoryDao.upsert(
+            product.toEntity(
+                scannedAt = System.currentTimeMillis(),
+                isFavorite = true ,
+                favoriteAt = System.currentTimeMillis()
+            )
+        )
+    }
+
+    override suspend fun isFavorite(barcode: String): Boolean {
+        return scanHistoryDao.isFavorite(barcode) == true
+    }
+
+
+    override suspend fun removeFromFavorites(barcode: String) {
+        scanHistoryDao.updateFavorite(
+            barcode = barcode,
+            isFavorite = false,
+            favoriteAt = null
+        )
     }
 }
 
