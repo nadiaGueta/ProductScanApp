@@ -1,5 +1,6 @@
 package com.example.productscanapp.ui.main
 
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,6 +30,7 @@ import com.example.productscanapp.ui.product.ProductRoute
 import com.example.productscanapp.ui.product.ProductUiState
 import com.example.productscanapp.ui.product.ProductViewModel
 import com.example.productscanapp.ui.scan.BarcodeScannerScreen
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun MainScreen(
@@ -103,7 +105,16 @@ fun MainScreen(
         }
     }
 }
-
+private fun String?.toNutriScoreColor(): Color {
+    return when (this?.uppercase()) {
+        "A" -> Color(0xFF2E7D32)
+        "B" -> Color(0xFF7CB342)
+        "C" -> Color(0xFFFBC02D)
+        "D" -> Color(0xFFFB8C00)
+        "E" -> Color(0xFFC62828)
+        else -> Color.Gray
+    }
+}
 
 @Composable
 private fun ProductDialog(
@@ -175,8 +186,10 @@ private fun ProductDialogContent(
 
         Text("Nom : ${product.name}")
         Text("Marque : ${product.brand}")
-        Text("NutriScore : ${product.nutriScore ?: "?"}")
-    }
+        Text(
+            text = "NutriScore : ${product.nutriScore ?: "?"}",
+            color = product.nutriScore.toNutriScoreColor()
+        )    }
 }
 
 private fun ProductError.toUserMessage(): String {

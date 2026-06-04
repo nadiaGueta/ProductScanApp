@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -101,6 +102,9 @@ fun CameraPreview(
     var hasScanned by remember {
         mutableStateOf(false)
     }
+
+    var lastBarcode by remember { mutableStateOf<String?>(null) }
+    var sameBarcodeCount by remember { mutableIntStateOf(0) }
     @Composable
     fun ScannerFrame() {
         Canvas(
@@ -236,22 +240,38 @@ fun CameraPreview(
                                     val isInsideFrame =
                                         centerX in frameLeft.toInt()..frameRight.toInt() &&
                                                 centerY in frameTop.toInt()..frameBottom.toInt()
-
                                     if (isInsideFrame) {
-                                        hasScanned = true
+
+                                        if (value == lastBarcode) {
+                                            sameBarcodeCount++
+                                        } else {
+                                            lastBarcode = value
+                                            sameBarcodeCount = 1
+                                        }
 
                                         Log.d(
                                             "BARCODE_SCAN",
-                                            "Code détecté dans le cadre : $value"
+                                            "Code dans le cadre : $value / count = $sameBarcodeCount"
                                         )
 
-                                        onBarcodeDetected(value)
+                                        if (sameBarcodeCount >= 3) {
+                                            hasScanned = true
+
+                                            Log.d(
+                                                "BARCODE_SCAN",
+                                                "Code validé : $value"
+                                            )
+
+                                            onBarcodeDetected(value)
+                                        }
+
                                     } else {
                                         Log.d(
                                             "BARCODE_SCAN",
                                             "Code détecté mais hors cadre : $value"
                                         )
                                     }
+
                                 }
                             }
                             .addOnCompleteListener {
