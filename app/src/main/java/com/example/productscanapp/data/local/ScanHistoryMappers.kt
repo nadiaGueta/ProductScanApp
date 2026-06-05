@@ -13,22 +13,26 @@ fun ScanHistoryEntity.toDomain(): Product {
         imageUrl = imageUrl,
     )
 }
-
 fun ScanHistoryEntity.toDomainItem(): ScanHistoryItem {
     return ScanHistoryItem(
         product = toDomain(),
-        scannedAt = scannedAt,
+        scannedAt = scannedAt
+
     )
 }
 
-fun Product.toEntity(scannedAt: Long): ScanHistoryEntity {
+
+fun Product.toEntity(
+    scannedAt: Long
+
+): ScanHistoryEntity {
     return ScanHistoryEntity(
         barcode = barcode,
         name = name,
         brand = brand,
         nutriScore = nutriScore,
         imageUrl = imageUrl,
-        scannedAt = scannedAt,
+        scannedAt = scannedAt
+
     )
 }
-

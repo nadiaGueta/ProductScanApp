@@ -1,21 +1,17 @@
 package com.example.productscanapp.data.local.entity
 
+
+
 import androidx.room.Entity
-import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(
-    tableName = "scan_history",
-    indices = [Index(value = ["scannedAt"])],
-)
-data class ScanHistoryEntity(
+@Entity(tableName = "favorites")
+data class FavoriteEntity(
     @PrimaryKey
     val barcode: String,
     val name: String,
     val brand: String,
     val nutriScore: String?,
     val imageUrl: String?,
-    val scannedAt: Long,
-  
+    val favoriteAt: Long
 )
-

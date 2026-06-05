@@ -3,11 +3,19 @@ package com.example.productscanapp.ui.main
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -33,6 +41,9 @@ import com.example.productscanapp.ui.product.ProductUiState
 import com.example.productscanapp.ui.product.ProductViewModel
 import com.example.productscanapp.ui.scan.BarcodeScannerScreen
 import androidx.compose.ui.graphics.Color
+import com.example.productscanapp.ui.favorite.FavoriteScreen
+import com.example.productscanapp.ui.common.toNutriScoreColor
+import com.example.productscanapp.ui.favorite.FavoriteViewModel
 
 @Composable
 fun MainScreen(
@@ -43,6 +54,7 @@ fun MainScreen(
     val searchViewModel = productViewModel
     val searchUiState by searchViewModel.uiState.collectAsState()
     val scannerUiState by scannerViewModel.uiState.collectAsState()
+    val scannerIsFavorite by scannerViewModel.isFavorite.collectAsState()
     var selectedTab by remember {
         mutableStateOf(AppTab.Recherche)
     }
@@ -97,7 +109,9 @@ fun MainScreen(
             }
 
             AppTab.Favoris -> {
-                PlaceholderTab("Favoris", Modifier.padding(innerPadding))
+                FavoriteScreen(
+                    modifier = Modifier.padding(innerPadding)
+                )
             }
 
             AppTab.Reglage -> {
@@ -108,29 +122,36 @@ fun MainScreen(
         if (showDialog) {
             ProductDialog(
                 uiState = scannerUiState,
+                isFavorite = scannerIsFavorite,
                 onDismiss = {
-                   showDialog = false
+                    showDialog = false
                     scannerKey++
+                },
+                onAddFavorite = { product ->
+                    scannerViewModel.addToFavorites(product)
+                },
+                onRemoveFavorite = { product ->
+                    scannerViewModel.removeFromFavorites(product)
                 }
+
+
             )
         }
     }
+
+
+
+
 }
-private fun String?.toNutriScoreColor(): Color {
-    return when (this?.uppercase()) {
-        "A" -> Color(0xFF2E7D32)
-        "B" -> Color(0xFF7CB342)
-        "C" -> Color(0xFFFBC02D)
-        "D" -> Color(0xFFFB8C00)
-        "E" -> Color(0xFFC62828)
-        else -> Color.Gray
-    }
-}
+
 
 @Composable
 private fun ProductDialog(
     uiState: ProductUiState,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    isFavorite: Boolean,
+    onAddFavorite: (Product) -> Unit ,
+    onRemoveFavorite: (Product) -> Unit
 ) {
     when (uiState) {
 
@@ -155,10 +176,18 @@ private fun ProductDialog(
         is ProductUiState.Success -> {
             AlertDialog(
                 onDismissRequest = onDismiss,
-                title = { Text("Produit trouvé") },
+
+                    title = {
+                        Text("Fiche produit")
+                    },
+
                 text = {
-                    ProductDialogContent(product = uiState.product)
-                },
+                    ProductDialogContent(
+                        product = uiState.product,
+                        isFavorite = isFavorite,
+                        onAddFavorite = onAddFavorite,
+                        onRemoveFavorite = onRemoveFavorite
+                    )                },
                 confirmButton = {
                     TextButton(onClick = onDismiss) {
                         Text("Fermer")
@@ -184,23 +213,61 @@ private fun ProductDialog(
     }
 }
 
+
+
 @Composable
 private fun ProductDialogContent(
-    product: Product
+    product: Product,
+    isFavorite: Boolean,
+    onAddFavorite: (Product) -> Unit,
+    onRemoveFavorite: (Product) -> Unit
 ) {
     Column {
         AsyncImage(
             model = product.imageUrl,
             contentDescription = product.name,
-            modifier = Modifier.height(160.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(160.dp)
         )
 
-        Text("Nom : ${product.name}")
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = product.name,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f)
+            )
+
+            IconButton(
+                onClick = {
+                    if (isFavorite) {
+                        onRemoveFavorite(product)
+                    } else {
+                        onAddFavorite(product)
+                    }
+                }
+            ) {
+                Icon(
+                    imageVector = if (isFavorite)
+                        Icons.Filled.Star
+                    else
+                        Icons.Outlined.StarBorder,
+                    contentDescription = "Favori",
+                    tint = if (isFavorite) Color(0xFFFFC107) else Color.Gray
+                )
+            }
+        }
+
         Text("Marque : ${product.brand}")
+
         Text(
             text = "NutriScore : ${product.nutriScore ?: "?"}",
             color = product.nutriScore.toNutriScoreColor()
-        )    }
+        )
+    }
 }
 
 private fun ProductError.toUserMessage(): String {

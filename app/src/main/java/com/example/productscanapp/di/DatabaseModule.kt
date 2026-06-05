@@ -3,6 +3,7 @@ package com.example.productscanapp.di
 import android.content.Context
 import androidx.room.Room
 import com.example.productscanapp.data.local.ScanHistoryDatabase
+import com.example.productscanapp.data.local.dao.FavoriteDao
 import com.example.productscanapp.data.local.dao.ScanHistoryDao
 import dagger.Module
 import dagger.Provides
@@ -26,13 +27,24 @@ object DatabaseModule {
             context,
             ScanHistoryDatabase::class.java,
             DATABASE_NAME,
-        ).build()
+        )
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     @Provides
     @Singleton
     fun provideScanHistoryDao(database: ScanHistoryDatabase): ScanHistoryDao {
         return database.scanHistoryDao()
+    }
+
+
+    @Provides
+    @Singleton
+    fun provideFavoriteDao(
+        database: ScanHistoryDatabase
+    ): FavoriteDao {
+        return database.favoriteDao()
     }
 }
 

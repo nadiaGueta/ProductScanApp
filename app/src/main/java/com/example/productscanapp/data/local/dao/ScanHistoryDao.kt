@@ -17,5 +17,17 @@ interface ScanHistoryDao {
 
     @Query("DELETE FROM scan_history WHERE barcode = :barcode")
     suspend fun deleteByBarcode(barcode: String)
+
+
+
+
+
+
+
+
+
+
+
 }
+
 

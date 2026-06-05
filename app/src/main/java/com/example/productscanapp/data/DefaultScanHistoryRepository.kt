@@ -20,7 +20,11 @@ class DefaultScanHistoryRepository @Inject constructor(
         .map { entities -> entities.map { it.toDomainItem() } }
 
     override suspend fun saveScan(product: Product) {
-        dao.upsert(product.toEntity(scannedAt = System.currentTimeMillis()))
+
+        dao.upsert(product.toEntity(
+            scannedAt = System.currentTimeMillis(),
+
+                  ))
     }
 
     override suspend fun deleteScan(barcode: String) {

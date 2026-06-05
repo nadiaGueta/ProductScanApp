@@ -43,6 +43,7 @@ class ProductViewModel @Inject constructor(
                         scanHistoryRepository.saveScan(product)
                     }
                     _uiState.value = ProductUiState.Success(product)
+                    _isFavorite.value = repository.isFavorite(product.barcode)
                 }
                 .onFailure { throwable ->
                     val error = (throwable as? ProductException)?.error ?: ProductError.Unknown
@@ -54,4 +55,25 @@ class ProductViewModel @Inject constructor(
     fun showProduct(product: Product) {
         _uiState.value = ProductUiState.Success(product)
     }
-}
+
+
+    fun addToFavorites(product: Product) {
+        viewModelScope.launch {
+            repository.addToFavorites(product)
+            _isFavorite.value = true
+        }
+    }
+    fun removeFromFavorites(product: Product) {
+        viewModelScope.launch {
+            repository.removeFromFavorites(product.barcode)
+            _isFavorite.value = false
+        }
+    }
+    private val _isFavorite = MutableStateFlow(false)
+    val isFavorite: StateFlow<Boolean> = _isFavorite.asStateFlow()
+
+
+    }
+
+
+
