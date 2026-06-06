@@ -72,7 +72,9 @@ class ProductViewModel @Inject constructor(
     private val _isFavorite = MutableStateFlow(false)
     val isFavorite: StateFlow<Boolean> = _isFavorite.asStateFlow()
 
-
+    fun showInvalidLinkError() {
+        _uiState.value = ProductUiState.Error(ProductError.Unknown)
+    }
     }
 
 

@@ -2,10 +2,13 @@ package com.example.productscanapp.data
 
 import com.example.productscanapp.data.local.dao.FavoriteDao
 import com.example.productscanapp.data.local.dao.ScanHistoryDao
+import com.example.productscanapp.data.local.toDomain as localToDomain
+import com.example.productscanapp.data.remote.toDomain
+import com.example.productscanapp.data.local.toEntity
 
 import com.example.productscanapp.data.local.toFavoriteEntity
 import com.example.productscanapp.data.remote.OpenFoodFactsApi
-import com.example.productscanapp.data.remote.toDomain
+
 import com.example.productscanapp.data.remote.toProductException
 import com.example.productscanapp.domain.Product
 import com.example.productscanapp.domain.ProductError
@@ -47,6 +50,14 @@ class DefaultProductRepository @Inject constructor(
 
     override suspend fun removeFromFavorites(barcode: String) {
         favoriteDao.deleteFavorite(barcode)
+    }
+
+
+
+    override suspend fun getProductFromLocal(barcode: String): Product? {
+        return scanHistoryDao
+            .getByBarcode(barcode)
+            ?.localToDomain()
     }
 }
 

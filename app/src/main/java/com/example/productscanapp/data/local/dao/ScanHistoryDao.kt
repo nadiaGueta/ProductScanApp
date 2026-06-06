@@ -19,6 +19,9 @@ interface ScanHistoryDao {
     suspend fun deleteByBarcode(barcode: String)
 
 
+    @Query("SELECT * FROM scan_history WHERE barcode = :barcode LIMIT 1")
+    suspend fun getByBarcode(barcode: String): ScanHistoryEntity?
+
 
 
 
