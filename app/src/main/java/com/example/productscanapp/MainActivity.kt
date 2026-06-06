@@ -45,7 +45,10 @@ class MainActivity : ComponentActivity() {
             val barcode = uri.lastPathSegment
 
             if (!barcode.isNullOrBlank()) {
-                productViewModel.loadProduct(barcode)
+                productViewModel.loadProduct(
+                    barcode = barcode,
+                    saveInHistory = false
+                )
             } else {
                 productViewModel.showInvalidLinkError()
             }

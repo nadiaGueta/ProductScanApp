@@ -25,7 +25,10 @@ class ProductViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<ProductUiState>(ProductUiState.Idle)
     val uiState: StateFlow<ProductUiState> = _uiState.asStateFlow()
 
-    fun loadProduct(barcode: String) {
+    fun loadProduct(
+        barcode: String,
+        saveInHistory: Boolean = true
+    ) {
         if (barcode.isBlank()) {
             _uiState.value = ProductUiState.Error(ProductError.NotFound)
             return
@@ -33,20 +36,27 @@ class ProductViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.value = ProductUiState.Loading
+
             val result = withContext(Dispatchers.IO) {
                 repository.getProductByBarcode(barcode.trim())
             }
 
             result
                 .onSuccess { product ->
-                    withContext(Dispatchers.IO) {
-                        scanHistoryRepository.saveScan(product)
+                    if (saveInHistory) {
+                        withContext(Dispatchers.IO) {
+                            scanHistoryRepository.saveScan(product)
+                        }
                     }
+
                     _uiState.value = ProductUiState.Success(product)
                     _isFavorite.value = repository.isFavorite(product.barcode)
                 }
                 .onFailure { throwable ->
-                    val error = (throwable as? ProductException)?.error ?: ProductError.Unknown
+                    val error =
+                        (throwable as? ProductException)?.error
+                            ?: ProductError.Unknown
+
                     _uiState.value = ProductUiState.Error(error)
                 }
         }

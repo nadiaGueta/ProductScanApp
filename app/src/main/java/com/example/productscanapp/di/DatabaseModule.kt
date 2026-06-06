@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.example.productscanapp.data.local.ScanHistoryDatabase
 import com.example.productscanapp.data.local.dao.FavoriteDao
+import com.example.productscanapp.data.local.dao.ProductDao
 import com.example.productscanapp.data.local.dao.ScanHistoryDao
 import dagger.Module
 import dagger.Provides
@@ -45,6 +46,16 @@ object DatabaseModule {
         database: ScanHistoryDatabase
     ): FavoriteDao {
         return database.favoriteDao()
+    }
+
+
+
+    @Provides
+    @Singleton
+    fun provideProductDao(
+        database: ScanHistoryDatabase
+    ): ProductDao {
+        return database.productDao()
     }
 }
 
