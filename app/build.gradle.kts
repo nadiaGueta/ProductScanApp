@@ -75,6 +75,8 @@ dependencies {
     implementation(libs.navigation.compose)
     implementation("io.coil-kt:coil-compose:2.7.0")
 
+    implementation(libs.workmanager)
+
     implementation(libs.camera.core)
     implementation(libs.camera.camera2)
     implementation(libs.camera.lifecycle)

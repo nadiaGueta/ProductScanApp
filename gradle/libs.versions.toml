@@ -27,6 +27,8 @@ foundation = "1.11.2"
 uiGeometry = "1.11.2"
 foundationLayout = "1.11.2"
 material3 = "1.4.0"
+workManager = "2.9.1"
+
 [libraries]
 
 # Android
@@ -62,6 +64,9 @@ moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "mosh
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+
+# WorkManager
+workmanager = { module = "androidx.work:work-runtime-ktx", version.ref = "workManager" }
 
 # Tests
 junit = { group = "junit", name = "junit", version.ref = "junit" }
