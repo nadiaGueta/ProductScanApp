@@ -8,4 +8,6 @@ interface ProductRepository {
     suspend fun isFavorite(barcode: String): Boolean
 
     suspend fun removeFromFavorites(barcode: String)
+
+    suspend fun getProductFromLocal(barcode: String): Product?
 }

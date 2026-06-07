@@ -41,6 +41,7 @@ import com.example.productscanapp.ui.product.ProductUiState
 import com.example.productscanapp.ui.product.ProductViewModel
 import com.example.productscanapp.ui.scan.BarcodeScannerScreen
 import androidx.compose.ui.graphics.Color
+import com.example.productscanapp.ui.common.ShareProductButton
 import com.example.productscanapp.ui.favorite.FavoriteScreen
 import com.example.productscanapp.ui.common.toNutriScoreColor
 import com.example.productscanapp.ui.favorite.FavoriteViewModel
@@ -267,6 +268,7 @@ private fun ProductDialogContent(
             text = "NutriScore : ${product.nutriScore ?: "?"}",
             color = product.nutriScore.toNutriScoreColor()
         )
+        ShareProductButton(product = product)
     }
 }
 

@@ -1,5 +1,7 @@
 package com.example.productscanapp
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -20,7 +22,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
+        handleDeepLink(intent)
         setContent {
             ProductScanAppTheme {
                 MainScreen(
@@ -28,6 +30,30 @@ class MainActivity : ComponentActivity() {
                     historyViewModel = historyViewModel,
                 )
             }
+        }
+    }
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleDeepLink(intent)
+    }
+
+    private fun handleDeepLink(intent: Intent?) {
+        val uri: Uri = intent?.data ?: return
+
+        if (uri.scheme == "myapp" && uri.host == "product") {
+            val barcode = uri.lastPathSegment
+
+            if (!barcode.isNullOrBlank()) {
+                productViewModel.loadProduct(
+                    barcode = barcode,
+                    saveInHistory = false
+                )
+            } else {
+                productViewModel.showInvalidLinkError()
+            }
+        } else {
+            productViewModel.showInvalidLinkError()
         }
     }
 }

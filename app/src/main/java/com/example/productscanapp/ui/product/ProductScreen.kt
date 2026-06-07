@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.productscanapp.domain.Product
 import com.example.productscanapp.domain.ProductError
+import com.example.productscanapp.ui.common.ShareProductButton
 
 @Composable
 fun ProductRoute(
@@ -137,6 +138,8 @@ private fun ProductContent(product: Product) {
                 color = product.nutriScore.toNutriScoreColor(),
                 style = MaterialTheme.typography.titleMedium,
             )
+
+
         }
     }
 }
