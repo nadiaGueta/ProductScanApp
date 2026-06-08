@@ -19,6 +19,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -43,16 +44,17 @@ import com.example.productscanapp.ui.history.HistoryViewModel
 import com.example.productscanapp.ui.product.ProductRoute
 import com.example.productscanapp.ui.product.ProductUiState
 import com.example.productscanapp.ui.product.ProductViewModel
-import com.example.productscanapp.ui.scan.BarcodeScannerScreen
 import com.example.productscanapp.ui.recommendation.RecommendationRoute
 import com.example.productscanapp.ui.recommendation.RecommendationViewModel
+import com.example.productscanapp.ui.scan.BarcodeScannerScreen
 
 @Composable
 fun MainScreen(
     productViewModel: ProductViewModel,
     historyViewModel: HistoryViewModel,
+    openScannerRequest: Int = 0,
     scannerViewModel: ProductViewModel = hiltViewModel(key = "scanner"),
-    recommendationViewModel: RecommendationViewModel = hiltViewModel(),
+    recommendationViewModel: RecommendationViewModel = hiltViewModel()
 ) {
     val searchViewModel = productViewModel
     val searchUiState by searchViewModel.uiState.collectAsState()
@@ -69,6 +71,12 @@ fun MainScreen(
 
     var scannerKey by remember {
         mutableIntStateOf(0)
+    }
+
+    LaunchedEffect(openScannerRequest) {
+        if (openScannerRequest > 0) {
+            selectedTab = AppTab.Scanner
+        }
     }
 
     Scaffold(
