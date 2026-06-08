@@ -30,12 +30,19 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlin {
+        jvmToolchain(17)
     }
     buildFeatures {
         compose = true
     }
+
+
+
 }
 
 dependencies {
@@ -86,4 +93,9 @@ dependencies {
     implementation(libs.mlkit.barcode)
 
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+
+    testImplementation("io.mockk:mockk-android:1.13.13")
+    testImplementation("io.mockk:mockk-agent:1.13.13")
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
 }
