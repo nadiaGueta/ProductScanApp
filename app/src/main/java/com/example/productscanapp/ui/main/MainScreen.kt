@@ -58,8 +58,8 @@ fun MainScreen(
 ) {
     val searchViewModel = productViewModel
     val searchUiState by searchViewModel.uiState.collectAsState()
-    val scannerUiState by searchViewModel.uiState.collectAsState()
-    val scannerIsFavorite by searchViewModel.isFavorite.collectAsState()
+    val scannerUiState by scannerViewModel.uiState.collectAsState()
+    val scannerIsFavorite by scannerViewModel.isFavorite.collectAsState()
 
     var selectedTab by remember {
         mutableStateOf(AppTab.Recherche)
@@ -104,7 +104,7 @@ fun MainScreen(
                         BarcodeScannerScreen(
                             onBarcodeDetected = { barcode ->
                                 showDialog = true
-                                searchViewModel.loadProduct(barcode)
+                                scannerViewModel.loadProduct(barcode)
                             }
                         )
                     }
@@ -152,10 +152,10 @@ fun MainScreen(
                     scannerKey++
                 },
                 onAddFavorite = { product ->
-                    searchViewModel.addToFavorites(product)
+                    scannerViewModel.addToFavorites(product)
                 },
                 onRemoveFavorite = { product ->
-                    searchViewModel.removeFromFavorites(product)
+                    scannerViewModel.removeFromFavorites(product)
                 }
             )
         }
