@@ -50,6 +50,17 @@ class ProductViewModel @Inject constructor(
                     }
 
                     _uiState.value = ProductUiState.Success(product)
+
+                    if (product.nutriScore?.uppercase() in setOf("D", "E")) {
+                        val alternative = withContext(Dispatchers.IO) {
+                            repository.getBetterAlternative(product)
+                        }
+
+                        _uiState.value = ProductUiState.Success(
+                            product = product,
+                            betterAlternative = alternative
+                        )
+                    }
                     _isFavorite.value = repository.isFavorite(product.barcode)
                 }
                 .onFailure { throwable ->

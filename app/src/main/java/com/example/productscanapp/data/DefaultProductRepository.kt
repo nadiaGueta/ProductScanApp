@@ -5,13 +5,10 @@ import com.example.productscanapp.data.local.dao.FavoriteDao
 import com.example.productscanapp.data.local.dao.ProductDao
 import com.example.productscanapp.data.local.dao.ScanHistoryDao
 import com.example.productscanapp.data.local.toDomain as localToDomain
-import com.example.productscanapp.data.remote.toDomain
-import com.example.productscanapp.data.local.toEntity
-
 import com.example.productscanapp.data.local.toFavoriteEntity
 import com.example.productscanapp.data.local.toProductEntity
 import com.example.productscanapp.data.remote.OpenFoodFactsApi
-
+import com.example.productscanapp.data.remote.toDomain
 import com.example.productscanapp.data.remote.toProductException
 import com.example.productscanapp.domain.Product
 import com.example.productscanapp.domain.ProductError
@@ -26,7 +23,9 @@ class DefaultProductRepository @Inject constructor(
     private val productDao: ProductDao,
 ) : ProductRepository {
 
-    override suspend fun getProductByBarcode(barcode: String): Result<Product> {
+    override suspend fun getProductByBarcode(
+        barcode: String
+    ): Result<Product> {
         val localProduct = getProductFromLocal(barcode)
 
         if (localProduct != null) {
@@ -41,7 +40,9 @@ class DefaultProductRepository @Inject constructor(
             val dto = response.product
 
             if (response.status != 1 || dto == null) {
-                Result.failure(ProductException(ProductError.NotFound))
+                Result.failure(
+                    ProductException(ProductError.NotFound)
+                )
             } else {
                 val product = dto.toDomain(barcode)
 
@@ -49,7 +50,10 @@ class DefaultProductRepository @Inject constructor(
                     product.toProductEntity()
                 )
 
-                Log.d("PRODUCT_SOURCE", "SAVED_LOCAL ${product.barcode}")
+                Log.d(
+                    "PRODUCT_SOURCE",
+                    "SAVED_LOCAL ${product.barcode}"
+                )
 
                 val saved = productDao.getByBarcode(product.barcode)
 
@@ -65,27 +69,76 @@ class DefaultProductRepository @Inject constructor(
         }
     }
 
+    override suspend fun getBetterAlternative(
+        product: Product
+    ): Product? {
+        if (product.nutriScore?.uppercase() !in setOf("D", "E")) {
+            return null
+        }
+
+        return try {
+            val productDto = api
+                .getProduct(product.barcode)
+                .product
+
+            val category = productDto
+                ?.categoriesTags
+                ?.lastOrNull()
+                ?: return null
+
+            val candidate = api
+                .searchAlternatives(category)
+                .products
+                .asSequence()
+                .filter { alternative ->
+                    val score = alternative.nutriScore?.uppercase()
+
+                    !alternative.code.isNullOrBlank() &&
+                            alternative.code != product.barcode &&
+                            !alternative.productName.isNullOrBlank() &&
+                            score in setOf("A", "B", "C")
+                }
+                .minByOrNull { alternative ->
+                    when (alternative.nutriScore?.uppercase()) {
+                        "A" -> 0
+                        "B" -> 1
+                        else -> 2
+                    }
+                }
+                ?: return null
+
+            val candidateBarcode = candidate.code
+                ?: return null
+
+            candidate.toDomain(candidateBarcode)
+        } catch (_: Throwable) {
+            null
+        }
+    }
+
     override suspend fun addToFavorites(product: Product) {
         favoriteDao.upsertFavorite(
             product.toFavoriteEntity()
         )
     }
 
-    override suspend fun isFavorite(barcode: String): Boolean {
+    override suspend fun isFavorite(
+        barcode: String
+    ): Boolean {
         return favoriteDao.isFavorite(barcode)
     }
 
-
-    override suspend fun removeFromFavorites(barcode: String) {
+    override suspend fun removeFromFavorites(
+        barcode: String
+    ) {
         favoriteDao.deleteFavorite(barcode)
     }
 
-
-
-    override suspend fun getProductFromLocal(barcode: String): Product? {
+    override suspend fun getProductFromLocal(
+        barcode: String
+    ): Product? {
         return productDao
             .getByBarcode(barcode)
             ?.localToDomain()
     }
 }
-
