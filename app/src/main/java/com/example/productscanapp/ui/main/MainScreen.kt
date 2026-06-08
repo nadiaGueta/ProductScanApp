@@ -134,13 +134,6 @@ fun MainScreen(
                     modifier = Modifier.padding(innerPadding)
                 )
             }
-
-            AppTab.Reglage -> {
-                PlaceholderTab(
-                    title = "Réglage",
-                    modifier = Modifier.padding(innerPadding)
-                )
-            }
         }
 
         if (showDialog) {
@@ -305,18 +298,5 @@ private fun ProductError.toUserMessage(): String {
         ProductError.Network -> "Pas de connexion. Vérifie le réseau."
         ProductError.NotFound -> "Produit introuvable."
         ProductError.Unknown -> "Erreur inattendue."
-    }
-}
-
-@Composable
-private fun PlaceholderTab(
-    title: String,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = title)
     }
 }

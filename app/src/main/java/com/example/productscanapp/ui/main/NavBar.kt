@@ -4,7 +4,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -47,12 +46,6 @@ fun NavBar(
             label = { Text("Favoris") }
         )
 
-        NavigationBarItem(
-            selected = selectedTab == AppTab.Reglage,
-            onClick = { onTabSelected(AppTab.Reglage) },
-            icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-            label = { Text("Réglage") }
-        )
 
         NavigationBarItem(
             selected = selectedTab == AppTab.Rec,
