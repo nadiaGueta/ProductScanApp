@@ -7,13 +7,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.StarBorder
+
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -29,13 +26,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.productscanapp.domain.Product
 import com.example.productscanapp.domain.ProductError
 import com.example.productscanapp.ui.common.BetterAlternativeBanner
+import com.example.productscanapp.ui.common.FavoriteButton
 import com.example.productscanapp.ui.common.ShareProductButton
 import com.example.productscanapp.ui.common.toNutriScoreColor
 import com.example.productscanapp.ui.favorite.FavoriteScreen
@@ -44,9 +42,10 @@ import com.example.productscanapp.ui.history.HistoryViewModel
 import com.example.productscanapp.ui.product.ProductRoute
 import com.example.productscanapp.ui.product.ProductUiState
 import com.example.productscanapp.ui.product.ProductViewModel
+import com.example.productscanapp.ui.scan.BarcodeScannerScreen
 import com.example.productscanapp.ui.recommendation.RecommendationRoute
 import com.example.productscanapp.ui.recommendation.RecommendationViewModel
-import com.example.productscanapp.ui.scan.BarcodeScannerScreen
+
 
 @Composable
 fun MainScreen(
@@ -60,7 +59,7 @@ fun MainScreen(
     val searchUiState by searchViewModel.uiState.collectAsState()
     val scannerUiState by scannerViewModel.uiState.collectAsState()
     val scannerIsFavorite by scannerViewModel.isFavorite.collectAsState()
-
+    val searchIsFavorite by searchViewModel.isFavorite.collectAsState()
     var selectedTab by remember {
         mutableStateOf(AppTab.Recherche)
     }
@@ -94,6 +93,13 @@ fun MainScreen(
                     uiState = searchUiState,
                     onSearch = { barcode ->
                         searchViewModel.loadProduct(barcode)
+                    },
+                    isFavorite = searchIsFavorite,
+                    onAddFavorite = { product ->
+                        searchViewModel.addToFavorites(product)
+                    },
+                    onRemoveFavorite = { product ->
+                        searchViewModel.removeFromFavorites(product)
                     }
                 )
             }
@@ -253,7 +259,8 @@ private fun ProductDialogContent(
                 modifier = Modifier.weight(1f)
             )
 
-            IconButton(
+            FavoriteButton(
+                isFavorite = isFavorite,
                 onClick = {
                     if (isFavorite) {
                         onRemoveFavorite(product)
@@ -261,22 +268,9 @@ private fun ProductDialogContent(
                         onAddFavorite(product)
                     }
                 }
-            ) {
-                Icon(
-                    imageVector = if (isFavorite) {
-                        Icons.Filled.Star
-                    } else {
-                        Icons.Outlined.StarBorder
-                    },
-                    contentDescription = "Favori",
-                    tint = if (isFavorite) {
-                        Color(0xFFFFC107)
-                    } else {
-                        Color.Gray
-                    }
-                )
-            }
+            )
         }
+
 
         Text(text = "Marque : ${product.brand}")
 
