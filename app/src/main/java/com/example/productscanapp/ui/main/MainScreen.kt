@@ -7,18 +7,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.StarBorder
+
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -28,7 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
@@ -48,16 +46,19 @@ import com.example.productscanapp.ui.scan.BarcodeScannerScreen
 import com.example.productscanapp.ui.recommendation.RecommendationRoute
 import com.example.productscanapp.ui.recommendation.RecommendationViewModel
 
+
 @Composable
 fun MainScreen(
     productViewModel: ProductViewModel,
     historyViewModel: HistoryViewModel,
-    recommendationViewModel: RecommendationViewModel = hiltViewModel(),
+    openScannerRequest: Int = 0,
+    scannerViewModel: ProductViewModel = hiltViewModel(key = "scanner"),
+    recommendationViewModel: RecommendationViewModel = hiltViewModel()
 ) {
     val searchViewModel = productViewModel
     val searchUiState by searchViewModel.uiState.collectAsState()
-    val scannerUiState by searchViewModel.uiState.collectAsState()
-    val scannerIsFavorite by searchViewModel.isFavorite.collectAsState()
+    val scannerUiState by scannerViewModel.uiState.collectAsState()
+    val scannerIsFavorite by scannerViewModel.isFavorite.collectAsState()
     val searchIsFavorite by searchViewModel.isFavorite.collectAsState()
     var selectedTab by remember {
         mutableStateOf(AppTab.Recherche)
@@ -69,6 +70,12 @@ fun MainScreen(
 
     var scannerKey by remember {
         mutableIntStateOf(0)
+    }
+
+    LaunchedEffect(openScannerRequest) {
+        if (openScannerRequest > 0) {
+            selectedTab = AppTab.Scanner
+        }
     }
 
     Scaffold(
@@ -103,7 +110,7 @@ fun MainScreen(
                         BarcodeScannerScreen(
                             onBarcodeDetected = { barcode ->
                                 showDialog = true
-                                searchViewModel.loadProduct(barcode)
+                                scannerViewModel.loadProduct(barcode)
                             }
                         )
                     }
@@ -151,10 +158,10 @@ fun MainScreen(
                     scannerKey++
                 },
                 onAddFavorite = { product ->
-                    searchViewModel.addToFavorites(product)
+                    scannerViewModel.addToFavorites(product)
                 },
                 onRemoveFavorite = { product ->
-                    searchViewModel.removeFromFavorites(product)
+                    scannerViewModel.removeFromFavorites(product)
                 }
             )
         }
@@ -270,6 +277,7 @@ private fun ProductDialogContent(
                 }
             )
         }
+
 
         Text(text = "Marque : ${product.brand}")
 
