@@ -25,20 +25,36 @@ class ProductViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<ProductUiState>(ProductUiState.Idle)
     val uiState: StateFlow<ProductUiState> = _uiState.asStateFlow()
 
+    private var lastLoadedBarcode: String? = null
+    private var isLoadingInProgress = false
+
     fun loadProduct(
         barcode: String,
         saveInHistory: Boolean = true
     ) {
+        if (isLoadingInProgress) {
+            return
+        }
+
         if (barcode.isBlank()) {
             _uiState.value = ProductUiState.Error(ProductError.NotFound)
             return
         }
 
+        val trimmedBarcode = barcode.trim()
+
+        if (lastLoadedBarcode == trimmedBarcode && _uiState.value is ProductUiState.Success) {
+            return
+        }
+
+        isLoadingInProgress = true
+        lastLoadedBarcode = trimmedBarcode
+
         viewModelScope.launch {
             _uiState.value = ProductUiState.Loading
 
             val result = withContext(Dispatchers.IO) {
-                repository.getProductByBarcode(barcode.trim())
+                repository.getProductByBarcode(trimmedBarcode)
             }
 
             result
@@ -69,6 +85,9 @@ class ProductViewModel @Inject constructor(
                             ?: ProductError.Unknown
 
                     _uiState.value = ProductUiState.Error(error)
+                }
+                .also {
+                    isLoadingInProgress = false
                 }
         }
     }
