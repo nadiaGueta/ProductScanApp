@@ -1,6 +1,5 @@
 package com.example.productscanapp.ui.main
 
-
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,33 +28,37 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.productscanapp.domain.Product
 import com.example.productscanapp.domain.ProductError
+import com.example.productscanapp.ui.common.BetterAlternativeBanner
+import com.example.productscanapp.ui.common.ShareProductButton
+import com.example.productscanapp.ui.common.toNutriScoreColor
+import com.example.productscanapp.ui.favorite.FavoriteScreen
 import com.example.productscanapp.ui.history.HistoryRoute
 import com.example.productscanapp.ui.history.HistoryViewModel
 import com.example.productscanapp.ui.product.ProductRoute
 import com.example.productscanapp.ui.product.ProductUiState
 import com.example.productscanapp.ui.product.ProductViewModel
 import com.example.productscanapp.ui.scan.BarcodeScannerScreen
-import androidx.compose.ui.graphics.Color
-import com.example.productscanapp.ui.common.ShareProductButton
-import com.example.productscanapp.ui.favorite.FavoriteScreen
-import com.example.productscanapp.ui.common.toNutriScoreColor
-import com.example.productscanapp.ui.favorite.FavoriteViewModel
+import com.example.productscanapp.ui.recommendation.RecommendationRoute
+import com.example.productscanapp.ui.recommendation.RecommendationViewModel
 
 @Composable
 fun MainScreen(
     productViewModel: ProductViewModel,
     historyViewModel: HistoryViewModel,
     scannerViewModel: ProductViewModel = hiltViewModel(key = "scanner"),
+    recommendationViewModel: RecommendationViewModel = hiltViewModel(),
 ) {
     val searchViewModel = productViewModel
     val searchUiState by searchViewModel.uiState.collectAsState()
     val scannerUiState by scannerViewModel.uiState.collectAsState()
     val scannerIsFavorite by scannerViewModel.isFavorite.collectAsState()
+
     var selectedTab by remember {
         mutableStateOf(AppTab.Recherche)
     }
@@ -63,7 +66,11 @@ fun MainScreen(
     var showDialog by remember {
         mutableStateOf(false)
     }
-    var scannerKey by remember { mutableIntStateOf(0) }
+
+    var scannerKey by remember {
+        mutableIntStateOf(0)
+    }
+
     Scaffold(
         bottomBar = {
             NavBar(
@@ -72,13 +79,11 @@ fun MainScreen(
             )
         }
     ) { innerPadding ->
-
         when (selectedTab) {
-
             AppTab.Recherche -> {
                 ProductRoute(
                     modifier = Modifier.padding(innerPadding),
-                   uiState = searchUiState,
+                    uiState = searchUiState,
                     onSearch = { barcode ->
                         searchViewModel.loadProduct(barcode)
                     }
@@ -87,16 +92,23 @@ fun MainScreen(
 
             AppTab.Scanner -> {
                 Box(modifier = Modifier.padding(innerPadding)) {
-                   key(scannerKey) {
+                    key(scannerKey) {
                         BarcodeScannerScreen(
                             onBarcodeDetected = { barcode ->
                                 showDialog = true
-                                scannerViewModel.loadProduct(barcode)                            }
+                                scannerViewModel.loadProduct(barcode)
+                            }
                         )
                     }
                 }
             }
 
+            AppTab.Rec -> {
+                RecommendationRoute(
+                    viewModel = recommendationViewModel,
+                    modifier = Modifier.padding(innerPadding)
+                )
+            }
 
             AppTab.Historique -> {
                 HistoryRoute(
@@ -105,7 +117,7 @@ fun MainScreen(
                     onProductClick = { product ->
                         searchViewModel.showProduct(product)
                         selectedTab = AppTab.Recherche
-                    },
+                    }
                 )
             }
 
@@ -116,7 +128,10 @@ fun MainScreen(
             }
 
             AppTab.Reglage -> {
-                PlaceholderTab("Réglage", Modifier.padding(innerPadding))
+                PlaceholderTab(
+                    title = "Réglage",
+                    modifier = Modifier.padding(innerPadding)
+                )
             }
         }
 
@@ -134,34 +149,28 @@ fun MainScreen(
                 onRemoveFavorite = { product ->
                     scannerViewModel.removeFromFavorites(product)
                 }
-
-
             )
         }
     }
-
-
-
-
 }
-
 
 @Composable
 private fun ProductDialog(
     uiState: ProductUiState,
     onDismiss: () -> Unit,
     isFavorite: Boolean,
-    onAddFavorite: (Product) -> Unit ,
+    onAddFavorite: (Product) -> Unit,
     onRemoveFavorite: (Product) -> Unit
 ) {
     when (uiState) {
-
         ProductUiState.Idle -> Unit
 
         ProductUiState.Loading -> {
             AlertDialog(
                 onDismissRequest = {},
-                title = { Text("Recherche du produit") },
+                title = {
+                    Text("Recherche du produit")
+                },
                 text = {
                     Box(
                         modifier = Modifier.height(120.dp),
@@ -177,18 +186,18 @@ private fun ProductDialog(
         is ProductUiState.Success -> {
             AlertDialog(
                 onDismissRequest = onDismiss,
-
-                    title = {
-                        Text("Fiche produit")
-                    },
-
+                title = {
+                    Text("Fiche produit")
+                },
                 text = {
                     ProductDialogContent(
                         product = uiState.product,
+                        betterAlternative = uiState.betterAlternative,
                         isFavorite = isFavorite,
                         onAddFavorite = onAddFavorite,
                         onRemoveFavorite = onRemoveFavorite
-                    )                },
+                    )
+                },
                 confirmButton = {
                     TextButton(onClick = onDismiss) {
                         Text("Fermer")
@@ -200,7 +209,9 @@ private fun ProductDialog(
         is ProductUiState.Error -> {
             AlertDialog(
                 onDismissRequest = onDismiss,
-                title = { Text("Erreur") },
+                title = {
+                    Text("Erreur")
+                },
                 text = {
                     Text(uiState.error.toUserMessage())
                 },
@@ -214,11 +225,10 @@ private fun ProductDialog(
     }
 }
 
-
-
 @Composable
 private fun ProductDialogContent(
     product: Product,
+    betterAlternative: Product?,
     isFavorite: Boolean,
     onAddFavorite: (Product) -> Unit,
     onRemoveFavorite: (Product) -> Unit
@@ -252,22 +262,32 @@ private fun ProductDialogContent(
                 }
             ) {
                 Icon(
-                    imageVector = if (isFavorite)
+                    imageVector = if (isFavorite) {
                         Icons.Filled.Star
-                    else
-                        Icons.Outlined.StarBorder,
+                    } else {
+                        Icons.Outlined.StarBorder
+                    },
                     contentDescription = "Favori",
-                    tint = if (isFavorite) Color(0xFFFFC107) else Color.Gray
+                    tint = if (isFavorite) {
+                        Color(0xFFFFC107)
+                    } else {
+                        Color.Gray
+                    }
                 )
             }
         }
 
-        Text("Marque : ${product.brand}")
+        Text(text = "Marque : ${product.brand}")
 
         Text(
             text = "NutriScore : ${product.nutriScore ?: "?"}",
             color = product.nutriScore.toNutriScoreColor()
         )
+
+        betterAlternative?.let { alternative ->
+            BetterAlternativeBanner(product = alternative)
+        }
+
         ShareProductButton(product = product)
     }
 }

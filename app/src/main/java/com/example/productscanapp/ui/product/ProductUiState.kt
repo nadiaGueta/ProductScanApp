@@ -6,7 +6,10 @@ import com.example.productscanapp.domain.ProductError
 sealed interface ProductUiState {
     data object Idle : ProductUiState
     data object Loading : ProductUiState
-    data class Success(val product: Product) : ProductUiState
+    data class Success(
+        val product: Product,
+        val betterAlternative: Product? = null
+    ) : ProductUiState
     data class Error(val error: ProductError) : ProductUiState
 }
 

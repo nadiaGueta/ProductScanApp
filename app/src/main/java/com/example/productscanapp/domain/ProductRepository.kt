@@ -10,4 +10,6 @@ interface ProductRepository {
     suspend fun removeFromFavorites(barcode: String)
 
     suspend fun getProductFromLocal(barcode: String): Product?
+
+    suspend fun getBetterAlternative(product: Product): Product?
 }

@@ -5,5 +5,6 @@ enum class AppTab {
     Scanner,
     Historique,
     Favoris,
-    Reglage
+    Reglage,
+    Rec
 }
