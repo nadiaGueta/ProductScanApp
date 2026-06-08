@@ -29,6 +29,7 @@ foundationLayout = "1.11.2"
 material3 = "1.4.0"
 workManager = "2.9.1"
 engageCore = "1.5.12"
+mockk = "1.13.13"
 
 [libraries]
 
@@ -75,7 +76,7 @@ androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "j
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
-
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 # Camera
 camera-core = { module = "androidx.camera:camera-core", version.ref = "camera" }
 camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camera" }

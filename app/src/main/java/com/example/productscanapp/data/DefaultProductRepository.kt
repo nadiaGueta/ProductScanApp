@@ -29,11 +29,11 @@ class DefaultProductRepository @Inject constructor(
         val localProduct = getProductFromLocal(barcode)
 
         if (localProduct != null) {
-            Log.d("PRODUCT_SOURCE", "LOCAL")
+            //Log.d("PRODUCT_SOURCE", "LOCAL")
             return Result.success(localProduct)
         }
 
-        Log.d("PRODUCT_SOURCE", "API")
+       // Log.d("PRODUCT_SOURCE", "API")
 
         return try {
             val response = api.getProduct(barcode)
@@ -50,17 +50,14 @@ class DefaultProductRepository @Inject constructor(
                     product.toProductEntity()
                 )
 
-                Log.d(
-                    "PRODUCT_SOURCE",
-                    "SAVED_LOCAL ${product.barcode}"
-                )
+              //  Log.d("PRODUCT_SOURCE", "SAVED_LOCAL ${product.barcode}")
 
                 val saved = productDao.getByBarcode(product.barcode)
 
-                Log.d(
-                    "PRODUCT_SOURCE",
-                    "CHECK_AFTER_SAVE = ${saved?.barcode}"
-                )
+              //  Log.d(
+               //     "PRODUCT_SOURCE",
+                //    "CHECK_AFTER_SAVE = ${saved?.barcode}"
+              //  )
 
                 Result.success(product)
             }
