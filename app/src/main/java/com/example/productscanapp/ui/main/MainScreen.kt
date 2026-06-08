@@ -35,6 +35,7 @@ import coil.compose.AsyncImage
 import com.example.productscanapp.domain.Product
 import com.example.productscanapp.domain.ProductError
 import com.example.productscanapp.ui.common.BetterAlternativeBanner
+import com.example.productscanapp.ui.common.FavoriteButton
 import com.example.productscanapp.ui.common.ShareProductButton
 import com.example.productscanapp.ui.common.toNutriScoreColor
 import com.example.productscanapp.ui.favorite.FavoriteScreen
@@ -57,7 +58,7 @@ fun MainScreen(
     val searchUiState by searchViewModel.uiState.collectAsState()
     val scannerUiState by searchViewModel.uiState.collectAsState()
     val scannerIsFavorite by searchViewModel.isFavorite.collectAsState()
-
+    val searchIsFavorite by searchViewModel.isFavorite.collectAsState()
     var selectedTab by remember {
         mutableStateOf(AppTab.Recherche)
     }
@@ -85,6 +86,13 @@ fun MainScreen(
                     uiState = searchUiState,
                     onSearch = { barcode ->
                         searchViewModel.loadProduct(barcode)
+                    },
+                    isFavorite = searchIsFavorite,
+                    onAddFavorite = { product ->
+                        searchViewModel.addToFavorites(product)
+                    },
+                    onRemoveFavorite = { product ->
+                        searchViewModel.removeFromFavorites(product)
                     }
                 )
             }
@@ -251,7 +259,8 @@ private fun ProductDialogContent(
                 modifier = Modifier.weight(1f)
             )
 
-            IconButton(
+            FavoriteButton(
+                isFavorite = isFavorite,
                 onClick = {
                     if (isFavorite) {
                         onRemoveFavorite(product)
@@ -259,21 +268,7 @@ private fun ProductDialogContent(
                         onAddFavorite(product)
                     }
                 }
-            ) {
-                Icon(
-                    imageVector = if (isFavorite) {
-                        Icons.Filled.Star
-                    } else {
-                        Icons.Outlined.StarBorder
-                    },
-                    contentDescription = "Favori",
-                    tint = if (isFavorite) {
-                        Color(0xFFFFC107)
-                    } else {
-                        Color.Gray
-                    }
-                )
-            }
+            )
         }
 
         Text(text = "Marque : ${product.brand}")

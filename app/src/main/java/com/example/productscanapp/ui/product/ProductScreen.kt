@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.productscanapp.domain.Product
 import com.example.productscanapp.domain.ProductError
+import com.example.productscanapp.ui.common.FavoriteButton
 import com.example.productscanapp.ui.common.ShareProductButton
 
 private fun String?.toNutriScoreColor(): Color = when (this?.uppercase()) {
@@ -78,11 +79,17 @@ fun ProductRoute(
     modifier: Modifier = Modifier,
     uiState: ProductUiState,
     onSearch: (String) -> Unit,
+    isFavorite: Boolean,
+    onAddFavorite: (Product) -> Unit,
+    onRemoveFavorite: (Product) -> Unit,
 ) {
     ProductScreen(
         uiState = uiState,
         onSearch = onSearch,
-        modifier = modifier,
+        isFavorite = isFavorite,
+        onAddFavorite = onAddFavorite,
+        onRemoveFavorite = onRemoveFavorite,
+        modifier = modifier
     )
 }
 
@@ -91,6 +98,13 @@ fun ProductScreen(
     uiState: ProductUiState,
     onSearch: (String) -> Unit,
     modifier: Modifier = Modifier,
+
+    isFavorite: Boolean,
+    onAddFavorite: (Product) -> Unit,
+    onRemoveFavorite: (Product) -> Unit
+
+
+
 ) {
     var barcode by remember { mutableStateOf("") }
 
@@ -156,7 +170,12 @@ fun ProductScreen(
         when (uiState) {
             ProductUiState.Idle -> IdleState()
             ProductUiState.Loading -> LoadingState()
-            is ProductUiState.Success -> ProductContent(product = uiState.product)
+            is ProductUiState.Success -> ProductContent(
+                product = uiState.product,
+                isFavorite = isFavorite,
+                onAddFavorite = onAddFavorite,
+                onRemoveFavorite = onRemoveFavorite
+            )
             is ProductUiState.Error -> ErrorState(error = uiState.error)
         }
     }
@@ -242,7 +261,12 @@ private fun ErrorState(error: ProductError) {
 }
 
 @Composable
-private fun ProductContent(product: Product) {
+private fun  ProductContent(
+    product: Product,
+    isFavorite: Boolean,
+    onAddFavorite: (Product) -> Unit,
+    onRemoveFavorite: (Product) -> Unit
+) {
     val score = product.nutriScore
 
     Card(
@@ -281,12 +305,29 @@ private fun ProductContent(product: Product) {
             Column(modifier = Modifier.padding(18.dp)) {
 
                 // Nom + marque
-                Text(
-                    text = product.name,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1A1A2E),
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = product.name,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1A1A2E),
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    FavoriteButton(
+                        isFavorite = isFavorite,
+                        onClick = {
+                            if (isFavorite) {
+                                onRemoveFavorite(product)
+                            } else {
+                                onAddFavorite(product)
+                            }
+                        }
+                    )
+                }
                 if (product.brand.isNotBlank()) {
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
@@ -368,6 +409,9 @@ private fun ProductScreenPreviewSuccess() {
             ),
         ),
         onSearch = {},
+        isFavorite = false,
+        onAddFavorite = {},
+        onRemoveFavorite = {},
     )
 }
 
