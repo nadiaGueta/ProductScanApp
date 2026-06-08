@@ -1,12 +1,16 @@
 package com.example.productscanapp.ui.main
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -26,8 +30,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.productscanapp.domain.Product
@@ -241,13 +251,27 @@ private fun ProductDialogContent(
     onRemoveFavorite: (Product) -> Unit
 ) {
     Column {
-        AsyncImage(
-            model = product.imageUrl,
-            contentDescription = product.name,
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(160.dp)
-        )
+                .height(170.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(Color(0xFFF5F5F5)),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (!product.imageUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = product.imageUrl,
+                    contentDescription = product.name,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            } else {
+                Text(text = "📦", fontSize = 36.sp)
+            }
+        }
+
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(12.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -256,6 +280,9 @@ private fun ProductDialogContent(
             Text(
                 text = product.name,
                 style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)
             )
 
@@ -271,19 +298,65 @@ private fun ProductDialogContent(
             )
         }
 
+        if (product.brand.isNotBlank()) {
+            Text(
+                text = product.brand,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
 
-        Text(text = "Marque : ${product.brand}")
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(10.dp))
 
-        Text(
-            text = "NutriScore : ${product.nutriScore ?: "?"}",
-            color = product.nutriScore.toNutriScoreColor()
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            NutriScoreCircle(product.nutriScore)
+            androidx.compose.foundation.layout.Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = nutriScoreLabel(product.nutriScore),
+                style = MaterialTheme.typography.bodyMedium,
+                color = product.nutriScore.toNutriScoreColor(),
+                fontWeight = FontWeight.Medium,
+            )
+        }
+
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(12.dp))
 
         betterAlternative?.let { alternative ->
             BetterAlternativeBanner(product = alternative)
+            androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(10.dp))
         }
 
         ShareProductButton(product = product)
+    }
+}
+
+@Composable
+private fun NutriScoreCircle(score: String?) {
+    val letter = score?.uppercase() ?: "?"
+    Box(
+        modifier = Modifier
+            .size(26.dp)
+            .clip(CircleShape)
+            .background(score.toNutriScoreColor()),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = letter,
+            color = Color.White,
+            fontWeight = FontWeight.ExtraBold,
+            fontSize = 12.sp,
+        )
+    }
+}
+
+private fun nutriScoreLabel(score: String?): String {
+    return when (score?.uppercase()) {
+        "A" -> "NutriScore A - Excellent"
+        "B" -> "NutriScore B - Bon"
+        "C" -> "NutriScore C - Moyen"
+        "D" -> "NutriScore D - Mediocre"
+        "E" -> "NutriScore E - Mauvais"
+        else -> "NutriScore inconnu"
     }
 }
 

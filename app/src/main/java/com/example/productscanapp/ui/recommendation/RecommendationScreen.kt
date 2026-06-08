@@ -1,20 +1,43 @@
 package com.example.productscanapp.ui.recommendation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.Recommend
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.productscanapp.domain.RecommendationItem
-import com.example.productscanapp.ui.common.BetterAlternativeBanner
 
 @Composable
 fun RecommendationRoute(
@@ -34,39 +57,218 @@ fun RecommendationScreen(
     recommendations: List<RecommendationItem>,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    if (recommendations.isEmpty()) {
+        Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    imageVector = Icons.Default.Recommend,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
+                    modifier = Modifier.size(72.dp),
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Aucune recommandation",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Scanne un produit D ou E pour voir une meilleure alternative",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                )
+            }
+        }
+        return
+    }
+
+    LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text(
-            text = "Recommandations",
-            style = MaterialTheme.typography.headlineSmall
-        )
-
-        if (recommendations.isEmpty()) {
+        item {
             Text(
-                text = "Aucune recommandation disponible.",
-                modifier = Modifier.padding(top = 16.dp)
+                text = "Recommandations",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
             )
-        } else {
-            LazyColumn(
-                modifier = Modifier.padding(top = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(
-                    items = recommendations,
-                    key = { it.scannedProduct.barcode }
-                ) { recommendation ->
-                    Text(
-                        text = "À la place de ${recommendation.scannedProduct.name}"
-                    )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Meilleures alternatives pour tes derniers scans",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
 
-                    BetterAlternativeBanner(
-                        product = recommendation.alternative
-                    )
-                }
+        items(
+            items = recommendations,
+            key = { it.scannedProduct.barcode },
+        ) { recommendation ->
+            RecommendationCard(recommendation = recommendation)
+        }
+    }
+}
+
+@Composable
+private fun RecommendationCard(recommendation: RecommendationItem) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFE8F5E9), RoundedCornerShape(10.dp))
+                    .padding(horizontal = 10.dp, vertical = 8.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.TrendingUp,
+                    contentDescription = null,
+                    tint = Color(0xFF2E7D32),
+                    modifier = Modifier.size(18.dp),
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "Meilleure alternative",
+                    color = Color(0xFF1B5E20),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                )
             }
+
+            Spacer(modifier = Modifier.height(12.dp))
+            ProductRow(
+                title = "Produit scanné",
+                name = recommendation.scannedProduct.name,
+                brand = recommendation.scannedProduct.brand,
+                imageUrl = recommendation.scannedProduct.imageUrl,
+                nutriScore = recommendation.scannedProduct.nutriScore,
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            ProductRow(
+                title = "Alternative proposée",
+                name = recommendation.alternative.name,
+                brand = recommendation.alternative.brand,
+                imageUrl = recommendation.alternative.imageUrl,
+                nutriScore = recommendation.alternative.nutriScore,
+                highlight = true,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProductRow(
+    title: String,
+    name: String,
+    brand: String,
+    imageUrl: String?,
+    nutriScore: String?,
+    highlight: Boolean = false,
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .size(56.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFFF5F5F5)),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (!imageUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = name,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            } else {
+                Text(text = "📦", fontSize = 24.sp)
+            }
+        }
+
+        Spacer(modifier = Modifier.width(10.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = name,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            if (brand.isNotBlank()) {
+                Text(
+                    text = brand,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+
+        NutriScoreBadge(
+            score = nutriScore,
+            isHighlighted = highlight,
+        )
+    }
+}
+
+@Composable
+private fun NutriScoreBadge(score: String?, isHighlighted: Boolean) {
+    val letter = score?.uppercase() ?: "?"
+    val badgeColor = when (letter) {
+        "A" -> Color(0xFF3AB547)
+        "B" -> Color(0xFF85BB2F)
+        "C" -> Color(0xFFF5A623)
+        "D" -> Color(0xFFE07B39)
+        "E" -> Color(0xFFE63946)
+        else -> Color(0xFFBDBDBD)
+    }
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier
+                .size(if (isHighlighted) 28.dp else 24.dp)
+                .clip(CircleShape)
+                .background(badgeColor),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = letter,
+                color = Color.White,
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 12.sp,
+            )
+        }
+
+        if (isHighlighted) {
+            Spacer(modifier = Modifier.height(3.dp))
+            Text(
+                text = "Mieux",
+                fontSize = 10.sp,
+                color = Color(0xFF2E7D32),
+                fontWeight = FontWeight.Medium,
+            )
         }
     }
 }
