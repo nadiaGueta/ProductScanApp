@@ -70,6 +70,7 @@ fun MainScreen(
     val scannerUiState by scannerViewModel.uiState.collectAsState()
     val scannerIsFavorite by scannerViewModel.isFavorite.collectAsState()
     val searchIsFavorite by searchViewModel.isFavorite.collectAsState()
+    val categoryState by searchViewModel.categoryState.collectAsState()
     var selectedTab by remember {
         mutableStateOf(AppTab.Recherche)
     }
@@ -101,8 +102,18 @@ fun MainScreen(
                 ProductRoute(
                     modifier = Modifier.padding(innerPadding),
                     uiState = searchUiState,
+                    categoryState = categoryState,
                     onSearch = { barcode ->
                         searchViewModel.loadProduct(barcode)
+                    },
+                    onCategorySearch = { category ->
+                        searchViewModel.searchCategory(category)
+                    },
+                    onLoadNextPage = {
+                        searchViewModel.loadNextCategoryPage()
+                    },
+                    onCategoryProductClick = { product ->
+                        searchViewModel.showProduct(product)
                     },
                     isFavorite = searchIsFavorite,
                     onAddFavorite = { product ->

@@ -8,7 +8,10 @@ interface OpenFoodFactsApi {
 
     @GET("api/v2/product/{barcode}.json")
     suspend fun getProduct(
-        @Path("barcode") barcode: String
+        @Path("barcode") barcode: String,
+        @Query("product_type") productType: String = "all",
+        @Query("fields") fields: String =
+            "code,product_name,brands,nutriscore_grade,image_url,categories_tags"
     ): OpenFoodFactsResponse
 
     @GET("api/v2/search")
@@ -17,5 +20,14 @@ interface OpenFoodFactsApi {
         @Query("page_size") pageSize: Int = 20,
         @Query("fields") fields: String =
             "code,product_name,brands,nutriscore_grade,image_url,categories_tags_en"
+    ): OpenFoodFactsSearchResponse
+
+    @GET("api/v2/search")
+    suspend fun searchProductsByCategory(
+        @Query("categories_tags_en") category: String,
+        @Query("page") page: Int,
+        @Query("page_size") pageSize: Int = 20,
+        @Query("fields") fields: String =
+            "code,product_name,brands,nutriscore_grade,image_url"
     ): OpenFoodFactsSearchResponse
 }
