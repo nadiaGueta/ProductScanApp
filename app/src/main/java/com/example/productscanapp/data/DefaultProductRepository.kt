@@ -138,4 +138,25 @@ class DefaultProductRepository @Inject constructor(
             .getByBarcode(barcode)
             ?.localToDomain()
     }
+
+    override suspend fun searchProductsByCategory(
+        category: String,
+        page: Int,
+        pageSize: Int
+    ): Result<List<Product>> {
+        return try {
+            val products = api
+                .searchProductsByCategory(category, page, pageSize)
+                .products
+                .mapNotNull { dto ->
+                    val code = dto.code ?: return@mapNotNull null
+                    if (dto.productName.isNullOrBlank()) return@mapNotNull null
+                    dto.toDomain(code)
+                }
+
+            Result.success(products)
+        } catch (throwable: Throwable) {
+            Result.failure(throwable.toProductException())
+        }
+    }
 }

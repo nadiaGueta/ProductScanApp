@@ -92,6 +92,7 @@ dependencies {
 
     implementation(libs.mlkit.barcode)
 
+    implementation("androidx.recyclerview:recyclerview:1.4.0")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     testImplementation("io.mockk:mockk-android:1.13.13")

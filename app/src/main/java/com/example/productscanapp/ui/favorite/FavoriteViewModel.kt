@@ -14,16 +14,12 @@ class FavoriteViewModel @Inject constructor(
     private val favoriteDao: FavoriteDao
 ) : ViewModel() {
 
-    val favorites = favoriteDao.observeFavorites()
+    val favorites = favoriteDao
+        .observeFavorites()
         .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            emptyList()
-        )
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            emptyList()
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
         )
 
     fun removeFromFavorites(barcode: String) {
@@ -31,5 +27,4 @@ class FavoriteViewModel @Inject constructor(
             favoriteDao.deleteFavorite(barcode)
         }
     }
-
 }

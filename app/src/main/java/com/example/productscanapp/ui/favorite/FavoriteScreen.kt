@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -47,29 +48,33 @@ import java.util.Locale
 
 private val FavoriteItemShape = RoundedCornerShape(18.dp)
 
-private fun nutriScoreColor(score: String?): Color = when (score?.uppercase()) {
-    "A" -> Color(0xFF3AB547)
-    "B" -> Color(0xFF85BB2F)
-    "C" -> Color(0xFFF5A623)
-    "D" -> Color(0xFFE07B39)
-    "E" -> Color(0xFFE63946)
-    else -> Color(0xFFBDBDBD)
+private fun nutriScoreColor(score: String?): Color {
+    return when (score?.uppercase()) {
+        "A" -> Color(0xFF3AB547)
+        "B" -> Color(0xFF85BB2F)
+        "C" -> Color(0xFFF5A623)
+        "D" -> Color(0xFFE07B39)
+        "E" -> Color(0xFFE63946)
+        else -> Color(0xFFBDBDBD)
+    }
 }
 
-private fun nutriScoreLabel(score: String?): String = when (score?.uppercase()) {
-    "A" -> "Excellent"
-    "B" -> "Bon"
-    "C" -> "Moyen"
-    "D" -> "Médiocre"
-    "E" -> "Mauvais"
-    else -> "?"
+private fun nutriScoreLabel(score: String?): String {
+    return when (score?.uppercase()) {
+        "A" -> "Excellent"
+        "B" -> "Bon"
+        "C" -> "Moyen"
+        "D" -> "Médiocre"
+        "E" -> "Mauvais"
+        else -> "Non évalué"
+    }
 }
 
 private fun formatDate(timeMillis: Long): String {
     val date = Date(timeMillis)
     val dateFormatter = DateFormat.getDateInstance(DateFormat.SHORT, Locale.FRANCE)
     val timeFormatter = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.FRANCE)
-    return "Ajouté le : ${dateFormatter.format(date)} à ${timeFormatter.format(date)}"
+    return "Ajouté le : ${dateFormatter.format(date)} à " + timeFormatter.format(date)
 }
 
 @Composable
@@ -79,116 +84,143 @@ fun FavoriteScreen(
 ) {
     val favorites by viewModel.favorites.collectAsState()
 
+    if (favorites.isEmpty()) {
+        EmptyFavoriteScreen(modifier)
+        return
+    }
+
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(
+            start = 16.dp,
+            top = 12.dp,
+            end = 16.dp,
+            bottom = 24.dp
+        ),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        item {
+            FavoriteHeader()
+        }
+
+        items(
+            items = favorites,
+            key = { favorite -> favorite.barcode }
+        ) { favorite ->
+            FavoriteItem(
+                favorite = favorite,
+                onRemoveFavorite = {
+                    viewModel.removeFromFavorites(
+                        favorite.barcode
+                    )
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptyFavoriteScreen(
+    modifier: Modifier = Modifier
+) {
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(16.dp)
     ) {
-        Text(
-            text = "Favoris",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = "Retrouve tes produits préférés",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(modifier = Modifier.height(10.dp))
+        FavoriteHeader()
 
-        if (favorites.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center,
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        imageVector = Icons.Outlined.Favorite,
-                        contentDescription = null,
-                        modifier = Modifier.size(72.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Aucun favori",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Vos produits préférés apparaîtront ici",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f),
-                    )
-                }
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                items(favorites, key = { it.barcode }) { favorite ->
-                    FavoriteItem(
-                        favorite = favorite,
-                        onRemoveFavorite = { viewModel.removeFromFavorites(favorite.barcode) }
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Outlined.Favorite,
+                    contentDescription = null,
+                    modifier = Modifier.size(72.dp),
+                    tint = MaterialTheme.colorScheme
+                        .onSurfaceVariant
+                        .copy(alpha = 0.35f)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "Aucun favori",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "Tes produits préférés apparaîtront ici",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme
+                        .onSurfaceVariant
+                )
             }
         }
     }
 }
 
 @Composable
+private fun FavoriteHeader() {
+    Text(
+        text = "Favoris",
+        style = MaterialTheme.typography.headlineSmall,
+        fontWeight = FontWeight.Bold
+    )
+
+    Spacer(modifier = Modifier.height(4.dp))
+
+    Text(
+        text = "Retrouve tes produits préférés",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+
+    Spacer(modifier = Modifier.height(10.dp))
+}
+
+@Composable
 private fun FavoriteItem(
     favorite: FavoriteEntity,
-    onRemoveFavorite: () -> Unit,
+    onRemoveFavorite: () -> Unit
 ) {
     val score = favorite.nutriScore
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(elevation = 3.dp, shape = FavoriteItemShape),
+            .shadow(
+                elevation = 3.dp,
+                shape = FavoriteItemShape
+            ),
         shape = FavoriteItemShape,
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 0.dp
+        )
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-
-            Box(
-                modifier = Modifier
-                    .size(70.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(Color(0xFFF5F5F5)),
-                contentAlignment = Alignment.Center,
-            ) {
-                if (!favorite.imageUrl.isNullOrBlank()) {
-                    AsyncImage(
-                        model = favorite.imageUrl,
-                        contentDescription = favorite.name,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                } else {
-                    Text(text = "📦", fontSize = 30.sp)
-                }
-            }
+            ProductImage(favorite)
 
             Spacer(modifier = Modifier.width(14.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                // Nom du produit
                 Text(
                     text = favorite.name,
                     style = MaterialTheme.typography.bodyLarge,
@@ -196,47 +228,24 @@ private fun FavoriteItem(
                     color = Color(0xFF1A1A2E),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    lineHeight = 20.sp,
+                    lineHeight = 20.sp
                 )
 
-                // Marque
                 if (favorite.brand.isNotBlank()) {
                     Spacer(modifier = Modifier.height(2.dp))
+
                     Text(
                         text = favorite.brand,
                         style = MaterialTheme.typography.bodySmall,
                         color = Color(0xFF9E9E9E),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 
-                // NutriScore
                 if (score != null) {
                     Spacer(modifier = Modifier.height(6.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(22.dp)
-                                .clip(CircleShape)
-                                .background(nutriScoreColor(score)),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(
-                                text = score.uppercase(),
-                                color = Color.White,
-                                fontWeight = FontWeight.ExtraBold,
-                                fontSize = 12.sp,
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = nutriScoreLabel(score),
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = nutriScoreColor(score),
-                        )
-                    }
+                    NutriScoreIndicator(score)
                 }
 
                 Spacer(modifier = Modifier.height(6.dp))
@@ -244,7 +253,7 @@ private fun FavoriteItem(
                 Text(
                     text = formatDate(favorite.favoriteAt),
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color(0xFFBDBDBD),
+                    color = Color(0xFFBDBDBD)
                 )
             }
 
@@ -260,5 +269,62 @@ private fun FavoriteItem(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun ProductImage(favorite: FavoriteEntity) {
+    Box(
+        modifier = Modifier
+            .size(70.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color(0xFFF5F5F5)),
+        contentAlignment = Alignment.Center
+    ) {
+        if (!favorite.imageUrl.isNullOrBlank()) {
+            AsyncImage(
+                model = favorite.imageUrl,
+                contentDescription = favorite.name,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            Text(
+                text = "Image indisponible",
+                fontSize = 10.sp,
+                color = Color(0xFF9E9E9E)
+            )
+        }
+    }
+}
+
+@Composable
+private fun NutriScoreIndicator(score: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(22.dp)
+                .clip(CircleShape)
+                .background(nutriScoreColor(score)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = score.uppercase(),
+                color = Color.White,
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 12.sp
+            )
+        }
+
+        Spacer(modifier = Modifier.width(6.dp))
+
+        Text(
+            text = nutriScoreLabel(score),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+            color = nutriScoreColor(score)
+        )
     }
 }

@@ -12,4 +12,10 @@ interface ProductRepository {
     suspend fun getProductFromLocal(barcode: String): Product?
 
     suspend fun getBetterAlternative(product: Product): Product?
+
+    suspend fun searchProductsByCategory(
+        category: String,
+        page: Int,
+        pageSize: Int = 20
+    ): Result<List<Product>>
 }
