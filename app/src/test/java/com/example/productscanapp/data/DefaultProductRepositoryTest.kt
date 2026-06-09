@@ -63,16 +63,17 @@ class DefaultProductRepositoryTest {
         coEvery { productDao.getByBarcode(barcode) } returns null
 
         coEvery { api.getProduct(barcode) } returns OpenFoodFactsResponse(
-            status = 1,
+           status = 1,
             product = ProductDto(
-                productName = "Coca-Cola",
-                brands = "Coca-Cola",
-                nutriScore = "E",
-                imageUrl = null
-            )
+             productName = "Coca-Cola",
+             brands = "Coca-Cola",
+               nutriScore = "E",
+                imageUrl = null,
+                code = barcode,
+                categoriesTags = listOf("en:beverages")
         )
-
-        coEvery { productDao.upsert(any()) } returns Unit
+       )
+            coEvery { productDao.upsert(any()) } returns Unit
 
         val result = repository.getProductByBarcode(barcode)
 
