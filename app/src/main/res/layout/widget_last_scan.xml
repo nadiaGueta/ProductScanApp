@@ -3,19 +3,28 @@
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#E8F5E9"
+    android:background="@drawable/widget_background"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:padding="16dp">
+    android:padding="14dp">
 
-    <ImageView
-        android:id="@+id/widget_product_image"
-        android:layout_width="72dp"
-        android:layout_height="72dp"
-        android:layout_marginEnd="12dp"
-        android:contentDescription="Image du dernier produit"
-        android:scaleType="centerCrop"
-        android:visibility="gone" />
+    <FrameLayout
+        android:id="@+id/widget_image_container"
+        android:layout_width="76dp"
+        android:layout_height="76dp"
+        android:layout_marginEnd="14dp"
+        android:background="@drawable/widget_image_background">
+
+        <ImageView
+            android:id="@+id/widget_product_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="Image du dernier produit"
+            android:padding="5dp"
+            android:scaleType="centerInside"
+            android:visibility="gone" />
+
+    </FrameLayout>
 
     <LinearLayout
         android:layout_width="0dp"
@@ -24,14 +33,23 @@
         android:orientation="vertical">
 
         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="DERNIER PRODUIT"
+            android:textColor="#6C63FF"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <TextView
             android:id="@+id/widget_product_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
             android:ellipsize="end"
             android:maxLines="2"
             android:text="Aucun scan récent"
-            android:textColor="#212121"
-            android:textSize="17sp"
+            android:textColor="#1A1A2E"
+            android:textSize="16sp"
             android:textStyle="bold" />
 
         <TextView
@@ -39,9 +57,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:textColor="#2E7D32"
-            android:textSize="15sp"
-            android:textStyle="bold" />
+            android:background="@drawable/widget_score_background"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="5dp"
+            android:textColor="#6C63FF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
 
     </LinearLayout>
 

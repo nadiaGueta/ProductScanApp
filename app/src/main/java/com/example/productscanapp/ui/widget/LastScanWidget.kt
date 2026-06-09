@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.view.View
 import android.widget.RemoteViews
 import com.example.productscanapp.MainActivity
@@ -46,21 +47,11 @@ class LastScanWidget : AppWidgetProvider() {
                     )
 
                     if (latestScan == null) {
-                        views.setTextViewText(
-                            R.id.widget_product_name,
-                            "Aucun scan récent"
-                        )
-
-                        views.setTextViewText(
-                            R.id.widget_nutriscore,
-                            ""
-                        )
-
-                        views.setViewVisibility(
-                            R.id.widget_product_image,
-                            View.GONE
-                        )
+                        showEmptyState(views)
                     } else {
+                        val score =
+                            latestScan.nutriScore?.uppercase() ?: "?"
+
                         views.setTextViewText(
                             R.id.widget_product_name,
                             latestScan.name
@@ -68,10 +59,25 @@ class LastScanWidget : AppWidgetProvider() {
 
                         views.setTextViewText(
                             R.id.widget_nutriscore,
-                            "NutriScore : ${latestScan.nutriScore ?: "?"}"
+                            "NutriScore $score"
+                        )
+
+                        views.setTextColor(
+                            R.id.widget_nutriscore,
+                            nutriScoreColor(score)
+                        )
+
+                        views.setViewVisibility(
+                            R.id.widget_nutriscore,
+                            View.VISIBLE
                         )
 
                         if (productImage != null) {
+                            views.setViewVisibility(
+                                R.id.widget_image_container,
+                                View.VISIBLE
+                            )
+
                             views.setImageViewBitmap(
                                 R.id.widget_product_image,
                                 productImage
@@ -83,7 +89,7 @@ class LastScanWidget : AppWidgetProvider() {
                             )
                         } else {
                             views.setViewVisibility(
-                                R.id.widget_product_image,
+                                R.id.widget_image_container,
                                 View.GONE
                             )
                         }
@@ -100,6 +106,28 @@ class LastScanWidget : AppWidgetProvider() {
                 pendingResult.finish()
             }
         }
+    }
+
+    private fun showEmptyState(views: RemoteViews) {
+        views.setTextViewText(
+            R.id.widget_product_name,
+            "Aucun scan récent"
+        )
+
+        views.setViewVisibility(
+            R.id.widget_nutriscore,
+            View.GONE
+        )
+
+        views.setViewVisibility(
+            R.id.widget_image_container,
+            View.GONE
+        )
+
+        views.setViewVisibility(
+            R.id.widget_product_image,
+            View.GONE
+        )
     }
 
     private fun loadProductImage(imageUrl: String?): Bitmap? {
@@ -136,8 +164,24 @@ class LastScanWidget : AppWidgetProvider() {
         }
     }
 
-    private fun createScannerIntent(context: Context): PendingIntent {
-        val intent = Intent(context, MainActivity::class.java).apply {
+    private fun nutriScoreColor(score: String?): Int {
+        return when (score?.uppercase()) {
+            "A" -> Color.rgb(58, 181, 71)
+            "B" -> Color.rgb(133, 187, 47)
+            "C" -> Color.rgb(245, 166, 35)
+            "D" -> Color.rgb(224, 123, 57)
+            "E" -> Color.rgb(230, 57, 70)
+            else -> Color.rgb(189, 189, 189)
+        }
+    }
+
+    private fun createScannerIntent(
+        context: Context
+    ): PendingIntent {
+        val intent = Intent(
+            context,
+            MainActivity::class.java
+        ).apply {
             action = MainActivity.ACTION_OPEN_SCANNER
             flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
                     Intent.FLAG_ACTIVITY_SINGLE_TOP
@@ -154,7 +198,8 @@ class LastScanWidget : AppWidgetProvider() {
 
     companion object {
         fun updateAll(context: Context) {
-            val manager = AppWidgetManager.getInstance(context)
+            val manager =
+                AppWidgetManager.getInstance(context)
 
             val component = ComponentName(
                 context,
@@ -171,7 +216,8 @@ class LastScanWidget : AppWidgetProvider() {
                 context,
                 LastScanWidget::class.java
             ).apply {
-                action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                action =
+                    AppWidgetManager.ACTION_APPWIDGET_UPDATE
 
                 putExtra(
                     AppWidgetManager.EXTRA_APPWIDGET_IDS,
